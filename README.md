@@ -4,7 +4,7 @@
 This is a basic [Buildroot](https://buildroot.org/) "board" config for
 Amazon EC2, with ssh. 
 
-The Linux kernel config comes from NixOS, 4.14.32 AWS.
+The Linux kernel config comes from NixOS Linux 4.14.32 AWS.
 
 Check out this repo on an EC2 build server. I used Ubuntu 18.04, t2.xlarge
 instance. The build generates a lot of files, so I added a 100GB gp2 disk,
@@ -23,6 +23,12 @@ sudo apt install sed make binutils gcc g++ bash patch gzip bzip2 perl tar cpio p
 git clone buildroot_ec2
 ```
 
+# Allow your user to log in via ssh
+
+```shell
+cp ~/.ssh/authorized_keys buildroot_ec2/board/ec2/rootfs_overlay/root/.ssh/
+```
+
 ## Download buildroot
 
 ```shell
@@ -39,6 +45,8 @@ ln -s buildroot-2018.05 buildroot
 cd buildroot
 make BR2_EXTERNAL=../buildroot_ec2 ec2_defconfig
 ```
+
+    make list-defconfigs
 
 ## Write disk image to mounted volume
 
@@ -59,7 +67,6 @@ Set up an AWS profile in `~/.aws/credentials`
     aws_access_key_id = XXX
     aws_secret_access_key = YYY
 
-
 Edit the script to match your environment:
 
     SECURITY_GROUP=sg-94bafcec
@@ -73,13 +80,20 @@ Run it, specifying your volume:
 AWS_PROFILE=cogini-dev ./launch-instance-from-volume.sh vol-abc123
 ```
 
+## Docs
+
+https://buildroot.org/downloads/manual/manual.html
+https://bootlin.com/doc/training/buildroot/buildroot-labs.pdf
+http://www.jumpnowtek.com/rpi/Raspberry-Pi-Systems-with-Buildroot.html
+https://dzone.com/articles/building-embedded-linux-with-buildroot
+
 ## Useful commands
 
-Configure buildroot
+Configure buildroot:
 
     make menuconfig
 
-Save buildroot config to buildroot_ec2/configs/ec2_defconfig
+Save buildroot config to `buildroot_ec2/configs/ec2_defconfig`:
 
     make savedefconfig
 
@@ -94,3 +108,53 @@ Configure Linux kernel
 Save to `.config`, then save the kernel config back to `buildroot_ec2/board/ec2/linux.config`:
 
     make linux-savedefconfig
+
+## Qemu
+
+    sudo apt install qemu
+
+    qemu-system-x86_64 -nographic -M pc -kernel output/images/bzImage -drive file=output/images/rootfs.ext2,if=virtio,format=raw -append "root=/dev/vda console=ttyS0" -net nic,model=virtio -net user
+
+
+    qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,if=virtio,format=raw
+    qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,format=raw -net nic -net user
+    qemu-system-x86_64 -nographic -serial mon:stdio -M pc -m 128 -drive file=output/images/disk.img,if=virtio,format=raw
+
+    Linux config for qemu: `board/qemu/x86_64/linux-4.15.config`
+
+Set root password:
+
+Enable password under "System configuration | Enable root login with password".
+Set password under "System configuration | Root password"
+
+## systemd-nspawn
+
+    sudo apt install systemd-container
+    sudo systemd-nspawn -b -i output/images/rootfs.ext2 -n
+
+Doesn't work, because kernel in image is newer than host
+
+Look at partitions in image:
+
+    sudo losetup -v -f --show `pwd`/output/images/disk.img
+    sudo fdisk /dev/loop2
+
+## Notes
+
+### Configs
+
+    configs/pc_x86_64_bios_defconfig
+    output/build/linux-4.16.13/arch/x86/configs/x86_64_defconfig
+    output/build/linux-4.16.13/arch/x86/configs/xen.config
+
+### Grub
+
+Current config comes from `board/pc`
+
+https://github.com/buildroot/buildroot/tree/master/boot/grub2
+https://www.systutorials.com/docs/linux/man/8-grub-bios-setup/
+https://git.busybox.net/buildroot/tree/boot/grub2/Config.in#n69
+https://ubuntuforums.org/showthread.php?t=1529777
+
+Most of the space is in linux kernel modules that we probably don't need.
+Reduce config.
