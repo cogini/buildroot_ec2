@@ -1,1 +1,1 @@
-/board/ec2/overlay/root/.ssh/*
+board/ec2/rootfs_overlay/root/.ssh/*
