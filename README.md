@@ -154,7 +154,6 @@ Current config comes from `board/pc`
 https://github.com/buildroot/buildroot/tree/master/boot/grub2
 https://www.systutorials.com/docs/linux/man/8-grub-bios-setup/
 https://git.busybox.net/buildroot/tree/boot/grub2/Config.in#n69
-https://ubuntuforums.org/showthread.php?t=1529777
 
 Most of the space is in linux kernel modules that we probably don't need.
 Reduce config.
