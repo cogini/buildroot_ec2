@@ -2,14 +2,16 @@
 # Buildroot config for AWS EC2
 
 This is a basic [Buildroot](https://buildroot.org/) "board" config for
-Amazon EC2, with ssh. 
+Amazon EC2, with ssh.
 
 The Linux kernel config comes from NixOS Linux 4.14.32 AWS.
 
 Check out this repo on an EC2 build server. I used Ubuntu 18.04, t2.xlarge
-instance. The build generates a lot of files, so I added a 100GB gp2 disk,
-mounted under my home directory. Add a volume to your build server, I used
-a 1GB gp2 volume, mounted under `/dev/sdf`.
+instance. The build generates a lot of files, so I added a 100GB gp2 EBS volume,
+mounted under my home directory.
+
+Add an EBS volume for the target system. We will create an AMI by making
+a snapshot of this volume. I used a 1GB gp2 volume, mounted under `/dev/sdf`.
 
 ## Install build deps
 
@@ -17,10 +19,10 @@ a 1GB gp2 volume, mounted under `/dev/sdf`.
 sudo apt install sed make binutils gcc g++ bash patch gzip bzip2 perl tar cpio python unzip rsync wget libncurses-dev libelf-dev
 ```
 
-## Download this external tree
+## Check out this repo
 
 ```shell
-git clone buildroot_ec2
+git clone $URL buildroot_ec2
 ```
 
 # Allow your user to log in via ssh
@@ -46,7 +48,7 @@ cd buildroot
 make BR2_EXTERNAL=../buildroot_ec2 ec2_defconfig
 ```
 
-    make list-defconfigs
+This will take a while, so you may want to run it under tmux.
 
 ## Write disk image to mounted volume
 
@@ -59,7 +61,7 @@ sudo dd if=output/images/disk.img of=/dev/xvdf
 The `board/ec2/launch-instance-from-volume.sh` launches an instance
 by making a snapshot of the volume, turning the snapshot into an AMI,
 then launching it. I normally run it from my local machine, not the build
-instance. 
+instance.
 
 Set up an AWS profile in `~/.aws/credentials`
 
@@ -109,35 +111,63 @@ Save to `.config`, then save the kernel config back to `buildroot_ec2/board/ec2/
 
     make linux-savedefconfig
 
+See the available buildroot configs
+
+```shell
+make list-defconfigs
+```
+
 ## Qemu
 
-    sudo apt install qemu
+Install
+```shell
+sudo apt install qemu
+```
 
-    qemu-system-x86_64 -nographic -M pc -kernel output/images/bzImage -drive file=output/images/rootfs.ext2,if=virtio,format=raw -append "root=/dev/vda console=ttyS0" -net nic,model=virtio -net user
+Run with text UI
+```shell
+qemu-system-x86_64 -nographic -serial mon:stdio -M pc -m 128 -drive file=output/images/disk.img,format=raw -net nic,model=virtio -net user,hostfwd=tcp::10022-:22
+```
+To quit: CTRL-A x
 
+Run with curses UI
+```shell
+qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,format=raw -net nic,model=virtio -net user -net user,hostfwd=tcp::10022-:22
+```
+To quit: ESC-2, quit
 
-    qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,if=virtio,format=raw
-    qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,format=raw -net nic -net user
-    qemu-system-x86_64 -nographic -serial mon:stdio -M pc -m 128 -drive file=output/images/disk.img,if=virtio,format=raw
+Run without grub bootloader
 
-    Linux config for qemu: `board/qemu/x86_64/linux-4.15.config`
+```shell
+qemu-system-x86_64 -nographic -M pc -kernel output/images/bzImage -drive file=output/images/rootfs.ext2,if=virtio,format=raw -append "root=/dev/vda console=ttyS0" -net nic,model=virtio -net user
+```
 
-Set root password:
+Connect via ssh
+```shell
+ssh -p10022 root@localhost
+```
+Connect to build server using `ssh -A build-server` to use your workstation's keys.
 
 Enable password under "System configuration | Enable root login with password".
 Set password under "System configuration | Root password"
 
+Linux config for qemu: `board/qemu/x86_64/linux-4.15.config`
+
 ## systemd-nspawn
 
-    sudo apt install systemd-container
-    sudo systemd-nspawn -b -i output/images/rootfs.ext2 -n
+```shell
+sudo apt install systemd-container
+sudo systemd-nspawn -b -i output/images/rootfs.ext2 -n
+```
 
-Doesn't work, because kernel in image is newer than host
+Doesn't work unless kernel in image matches host
 
-Look at partitions in image:
+View partitions in image
 
-    sudo losetup -v -f --show `pwd`/output/images/disk.img
-    sudo fdisk /dev/loop2
+```
+sudo losetup -v -f --show `pwd`/output/images/disk.img
+sudo fdisk /dev/loop2
+```
 
 ## Notes
 
