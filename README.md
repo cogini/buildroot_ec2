@@ -1,4 +1,3 @@
-
 # Buildroot config for AWS EC2
 
 This is a basic [Buildroot](https://buildroot.org/) "board" config for
@@ -60,7 +59,7 @@ sudo dd if=output/images/disk.img of=/dev/xvdf
 
 The `board/ec2/launch-instance-from-volume.sh` launches an instance
 by making a snapshot of the volume, turning the snapshot into an AMI,
-then launching it. I normally run it from my local machine, not the build
+then starting it. I normally run it from my local machine, not the build
 instance.
 
 Set up an AWS profile in `~/.aws/credentials`
@@ -173,13 +172,15 @@ sudo fdisk /dev/loop2
 
 ### Configs
 
+Buildroot
+    Started with `board/pc`
     configs/pc_x86_64_bios_defconfig
+
     output/build/linux-4.16.13/arch/x86/configs/x86_64_defconfig
     output/build/linux-4.16.13/arch/x86/configs/xen.config
+    board/qemu/x86_64/linux-4.15.config
 
 ### Grub
-
-Current config comes from `board/pc`
 
 https://github.com/buildroot/buildroot/tree/master/boot/grub2
 https://www.systutorials.com/docs/linux/man/8-grub-bios-setup/
