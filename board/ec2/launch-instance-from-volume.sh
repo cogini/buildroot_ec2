@@ -68,8 +68,8 @@ echo "Registering image with snapshot $SNAPSHOT_ID"
 IMAGE_ID=$(aws ec2 register-image --architecture x86_64 \
     --block-device-mappings "DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,SnapshotId=$SNAPSHOT_ID,VolumeSize=1,VolumeType=gp2}" \
     --name "$NAME $SNAPSHOT_ID" --root-device-name /dev/sda1 --virtualization-type hvm \
+    --ena-support --sriov-net-support simple \
     --query 'ImageId' --output text)
-    # --ena-support --sriov-net-support simple \
 
 echo "Starting instance with AMI $IMAGE_ID"
 INSTANCE_ID=$(aws ec2 run-instances --image-id "$IMAGE_ID" --instance-type t2.micro --key-name $KEYPAIR \
