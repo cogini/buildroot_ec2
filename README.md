@@ -131,7 +131,7 @@ To quit: CTRL-A, x
 
 Run with curses UI
 ```shell
-qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,if=virtio,format=raw -net nic,model=virtio -net user -net user,hostfwd=tcp::10022-:22
+qemu-system-x86_64 -curses -M pc -m 128 -drive file=output/images/disk.img,if=virtio,format=raw -net nic,model=virtio -net user,hostfwd=tcp::10022-:22
 ```
 To quit: ESC-2, quit
 
