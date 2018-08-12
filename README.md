@@ -21,7 +21,7 @@ sudo apt install sed make binutils gcc g++ bash patch gzip bzip2 perl tar cpio p
 ## Check out this repo
 
 ```shell
-git clone $URL buildroot_ec2
+git clone https://github.com/cogini/buildroot_ec2
 ```
 
 # Allow your user to log in via ssh
