@@ -21,7 +21,7 @@ sudo apt install sed make binutils gcc g++ bash patch gzip bzip2 perl tar cpio p
 ## Check out this repo
 
 ```shell
-git clone $URL buildroot_ec2
+git clone https://github.com/cogini/buildroot_ec2 buildroot_ec2
 ```
 
 # Allow your user to log in via ssh
@@ -83,10 +83,10 @@ AWS_PROFILE=cogini-dev ./launch-instance-from-volume.sh vol-abc123
 
 ## Docs
 
-https://buildroot.org/downloads/manual/manual.html
-https://bootlin.com/doc/training/buildroot/buildroot-labs.pdf
-http://www.jumpnowtek.com/rpi/Raspberry-Pi-Systems-with-Buildroot.html
-https://dzone.com/articles/building-embedded-linux-with-buildroot
+* https://buildroot.org/downloads/manual/manual.html
+* https://bootlin.com/doc/training/buildroot/buildroot-labs.pdf
+* http://www.jumpnowtek.com/rpi/Raspberry-Pi-Systems-with-Buildroot.html
+* https://dzone.com/articles/building-embedded-linux-with-buildroot
 
 ## Useful commands
 
@@ -182,9 +182,9 @@ Buildroot
 
 ### Grub
 
-https://github.com/buildroot/buildroot/tree/master/boot/grub2
-https://www.systutorials.com/docs/linux/man/8-grub-bios-setup/
-https://git.busybox.net/buildroot/tree/boot/grub2/Config.in#n69
+* https://github.com/buildroot/buildroot/tree/master/boot/grub2
+* https://www.systutorials.com/docs/linux/man/8-grub-bios-setup/
+* https://git.busybox.net/buildroot/tree/boot/grub2/Config.in#n69
 
 Most of the space is in linux kernel modules that we probably don't need.
 Reduce config.
