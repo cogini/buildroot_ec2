@@ -55,6 +55,30 @@ This will take a while, so you may want to run it under tmux.
 sudo dd if=output/images/disk.img of=/dev/xvdf
 ```
 
+## Configure AWS
+
+Set up an AWS profile in `~/.aws/credentials`
+
+    [buildroot-dev]
+    aws_access_key_id = XXX
+    aws_secret_access_key = YYY
+
+```shell
+export AWS_PROFILE=buildroot-dev
+```
+
+## Create a keypair
+
+```shell
+board/ec2/create-key-pair.sh buildroot
+```
+
+## Create a security group
+
+```shell
+board/ec2/create-security-group.sh buildroot
+```
+
 ## Launch an EC2 instance
 
 The `board/ec2/launch-instance-from-volume.sh` launches an instance
@@ -62,23 +86,17 @@ by making a snapshot of the volume, turning the snapshot into an AMI,
 then starting it. I normally run it from my local machine, not the build
 instance.
 
-Set up an AWS profile in `~/.aws/credentials`
-
-    [cogini-dev]
-    aws_access_key_id = XXX
-    aws_secret_access_key = YYY
-
 Edit the script to match your environment:
 
-    SECURITY_GROUP=sg-94bafcec
+    SECURITY_GROUP=buildroot
     NAME=buildroot
     TAG_OWNER=jake
-    KEYPAIR=cogini-jake
+    KEYPAIR=buildroot
 
 Run it, specifying your volume:
 
 ```shell
-AWS_PROFILE=cogini-dev ./launch-instance-from-volume.sh vol-abc123
+board/ec2/launch-instance-from-volume.sh vol-abc123
 ```
 
 ## Docs
