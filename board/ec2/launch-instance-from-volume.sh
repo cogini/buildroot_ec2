@@ -7,10 +7,15 @@
 set -e
 
 VOLUME_ID=$1
-SECURITY_GROUP=sg-94bafcec
+SECURITY_GROUP=buildroot
 NAME=buildroot
 TAG_OWNER=jake
-KEYPAIR=cogini-jake
+KEYPAIR=buildroot
+IAM_INSTANCE_PROFILE=buildroot
+
+SECURITY_GROUP_ID=$( aws ec2 describe-security-groups \
+    --group-names "$SECURITY_GROUP" \
+    --query "SecurityGroups[0].GroupId" --output text)
 
 getVolumeIdentifier() {
   aws ec2 describe-instances \
@@ -72,9 +77,16 @@ IMAGE_ID=$(aws ec2 register-image --architecture x86_64 \
     --query 'ImageId' --output text)
 
 echo "Starting instance with AMI $IMAGE_ID"
+# INSTANCE_ID=$(aws ec2 run-instances --image-id "$IMAGE_ID" --instance-type t2.micro --key-name $KEYPAIR \
+#     --associate-public-ip-address --security-group-ids $SECURITY_GROUP_ID \
+#     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME},{Key=owner,Value=$TAG_OWNER}]" \
+#     --query Instances[0].InstanceId --output text)
+
 INSTANCE_ID=$(aws ec2 run-instances --image-id "$IMAGE_ID" --instance-type t2.micro --key-name $KEYPAIR \
-    --associate-public-ip-address --security-group-ids $SECURITY_GROUP \
+    --associate-public-ip-address --security-group-ids $SECURITY_GROUP_ID \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME},{Key=owner,Value=$TAG_OWNER}]" \
+    --user-data "Hello Buildroot" \
+    --iam-instance-profile "Name=$IAM_INSTANCE_PROFILE" \
     --query Instances[0].InstanceId --output text)
 
 waitForInstanceState "$INSTANCE_ID" "running"
