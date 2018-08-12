@@ -1,1 +1,2 @@
 board/ec2/rootfs_overlay/root/.ssh/*
+board/ec2/systemd/rootfs_overlay/root/.ssh/*
