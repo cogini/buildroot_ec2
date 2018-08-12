@@ -57,31 +57,90 @@ sudo dd if=output/images/disk.img of=/dev/xvdf
 
 ## Configure AWS
 
-Set up an AWS profile in `~/.aws/credentials`
+At this point, the new system is all set up on the EBS volume.
+Now we need to launch an instance from it. We do that using the AWS API, so
+it can run from anywhere. I normally run it from my dev machine, but you
+can do it from the build server as well.
+
+In order to talk to the API, we need permissions. When you create an AWS
+account, you get a "root" account with full permissions, but you should
+not use it for for everyday operations. You should create an admin user
+for yourself and a role for your app to run under which gives it access
+to specific resources.
+
+Go to [IAM](https://console.aws.amazon.com/iam/home) in the AWS console.
+
+Create a group called `Admins` and attach policy `AdministratorAccess`, giving members full access.
+
+Create a user for yourself, e.g. `cogini-jake`. Under "Access type," check
+"Programmatic access" and "AWS Management Console access." Set your login password.
+Click "Next: Permissions" and then "Add user to group", selecting the `Admins` group.
+Record the "Access key id" and "Secret access key" now, this is your only chance.
+
+On your local dev machine, set up an AWS profile in `~/.aws/credentials` with the keys:
 
     [buildroot-dev]
     aws_access_key_id = XXX
     aws_secret_access_key = YYY
 
+Most AWS client tools will automatically look up the access keys using the profile,
+so you can control keys on a per-project basis by setting the profile in the environment.
+
 ```shell
 export AWS_PROFILE=buildroot-dev
 ```
 
-## Create a keypair
+Install the [AWS Command Line Interface](https://aws.amazon.com/cli/):
+
+```shell
+pip install awscli
+```
+
+Create an ssh [key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html).
+Run `create-key-pair.sh`
 
 ```shell
 board/ec2/create-key-pair.sh buildroot
 ```
 
-## Create a security group
+Copy the output to `~/.ssh/buildroot.pem` and `chmod 0600 buildroot.pem`.
+
+Create an AWS security group (like a firewall) which allows access to the ports on the instance from the Internet.
+`create-security-group.sh`
+opens port 22 for the IEx console and port 80 for HTTP.
 
 ```shell
 board/ec2/create-security-group.sh buildroot
 ```
 
+## Launch the instance
+
+`launch-instance-from-volume.sh` takes a snapshot of the volume, builds an AMI,
+then launches an EC2 instance with it.
+
+Edit the script to match your details:
+
+```shell
+# Name of security group
+SECURITY_GROUP=buildroot
+# Name of instance to create
+NAME=buildroot
+KEYPAIR=buildroot
+# Tag instance with owner so admins can clean up stray instances
+TAG_OWNER=jake
+```
+
+Run the script, specifying your volume:
+
+```shell
+board/ec2/launch-instance-from-volume.sh vol-abc123
+```
+
+The script will print the IP of the new instance, or you can get it from the AWS console.
+
 ## Launch an EC2 instance
 
-The `board/ec2/launch-instance-from-volume.sh` launches an instance
+The `board/ec2/launch-instance-from-volume.sh` script launches an instance
 by making a snapshot of the volume, turning the snapshot into an AMI,
 then starting it. I normally run it from my local machine, not the build
 instance.
