@@ -1,0 +1,10 @@
+config BR2_PACKAGE_ERLANG_APP
+    bool "erlang-app"
+    depends on BR2_PACKAGE_ERLANG
+    help
+      Sets up system for an app which will be deployed via an Erlang release.
+
+      http://www.cogini.com/
+
+comment "erlang-app needs erlang"
+    depends on !BR2_PACKAGE_ERLANG
