@@ -1,0 +1,72 @@
+[Unit]
+Description=Erlang app
+After=local-fs.target network.target
+
+# https://www.freedesktop.org/software/systemd/man/systemd.exec.html
+[Service]
+Type=simple
+User=erlang-app
+Group=erlang-app
+WorkingDirectory=/srv/erlang-app/current
+ExecStart=/srv/erlang-app/current/bin/deploy_template foreground
+ExecStop=/srv/erlang-app/current/bin/deploy_template stop
+Environment=LANG=en_US.UTF-8
+Environment=MIX_ENV=prod
+Environment=RELEASE_MUTABLE_DIR=/run/erlang-app
+Environment=PORT=4001
+# Environment=CONFORM_CONF_PATH=/etc/erlang-app/erlang-app.conf
+# systemd ignores /etc/security/limits
+LimitNOFILE=65536
+UMask=0027
+SyslogIdentifier=erlang-app
+Restart=always
+RestartSec=5
+# PermissionsStartOnly=true
+RuntimeDirectory=erlang-app
+RuntimeDirectoryMode=0750
+#RuntimeDirectoryPreserve=no
+
+ConfigurationDirectory=erlang-app
+ConfigurationDirectoryMode=0750
+LogsDirectory=erlang-app
+LogsDirectoryMode=0750
+
+StateDirectory=erlang-app
+StateDirectoryMode=0750
+
+StateDirectory=erlang-app
+StateDirectoryMode=0750
+
+# RootDirectory=/srv/erlang-app
+
+#ReadWritePaths={{ elixir_release_read_write_paths | join(' ') }}
+#ReadWritePaths={{ elixir_release_read_only_paths | join(' ') }}
+#ReadWritePaths={{ elixir_release_inaccessible_paths | join(' ') }}
+# elixir_release_paranoia
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateUsers=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+
+MountAPIVFS=yes
+LockPersonality=yes
+# RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+# SELinuxContext=
+# AppArmorProfile=
+# SmackProcessLabel=
+
+# KillMode=process # default control-group
+# TimeoutSec=10
+# RemainAfterExit=no
+# https://elixirforum.com/t/distillery-node-is-not-running-and-non-zero-exit-code/3834
+# SuccessExitStatus=143
+
+# From distillery https://hexdocs.pm/distillery/use-with-systemd.html
+
+[Install]
+WantedBy=multi-user.target
