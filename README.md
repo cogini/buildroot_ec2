@@ -1,16 +1,20 @@
 # Buildroot config for AWS EC2
 
-This is a basic [Buildroot](https://buildroot.org/) "board" config for
-Amazon EC2, with ssh.
+This is an example of using the [Buildroot](https://buildroot.org/) embedded
+Linux build system to create a custom AMI for Amazon.
+
+It is a basi Buildroot "board" config, with ssh and a few utilities.
 
 The Linux kernel config comes from NixOS Linux 4.14.32 AWS.
 
-Check out this repo on an EC2 build server. I used Ubuntu 18.04, t2.xlarge
-instance. The build generates a lot of files, so I added a 100GB gp2 EBS volume,
-mounted under my home directory.
+The general approach is to build on an EC2 instance and create an
+image on an EBS volume, then create a snapshot of the volume and turn it into an AMI.
 
-Add an EBS volume for the target system. We will create an AMI by making
-a snapshot of this volume. I used a 1GB gp2 volume, mounted under `/dev/sdf`.
+Check out this repo on an EC2 build server. I used Ubuntu 18.04, t2.xlarge
+instance. The build generates a lot of files, so I added a 100GB gp2 EBS
+volume, mounted under my home directory.
+
+I used a 1GB gp2 volume for the target system, mounted under `/dev/sdf`.
 
 ## Install build deps
 
@@ -36,7 +40,7 @@ cp ~/.ssh/authorized_keys buildroot_ec2/board/ec2/rootfs_overlay/root/.ssh/
 wget https://buildroot.org/downloads/buildroot-2018.05.tar.bz2
 mkdir work
 cd work
-bzip -dc buildroot-2018.05.tar.bz2 | tar xvf -
+bzip2 -dc buildroot-2018.05.tar.bz2 | tar xvf -
 ln -s buildroot-2018.05 buildroot
 ```
 
