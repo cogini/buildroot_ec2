@@ -3,15 +3,15 @@
 This is an example of using the [Buildroot](https://buildroot.org/) embedded
 Linux build system to create a custom AMI for Amazon.
 
-It is a basi Buildroot "board" config, with ssh and a few utilities.
+It is a basic Buildroot "board" config, with ssh and a few utilities.
 
 The Linux kernel config comes from NixOS Linux 4.14.32 AWS.
 
 The general approach is to build on an EC2 instance and create an
 image on an EBS volume, then create a snapshot of the volume and turn it into an AMI.
 
-Check out this repo on an EC2 build server. I used Ubuntu 18.04, t2.xlarge
-instance. The build generates a lot of files, so I added a 100GB gp2 EBS
+Check out this repo on an EC2 build server. I used a t2.xlarge instance running
+Ubuntu 18.04. The build generates a lot of files, so I added a 100GB gp2 EBS
 volume, mounted under my home directory.
 
 I used a 1GB gp2 volume for the target system, mounted under `/dev/sdf`.
