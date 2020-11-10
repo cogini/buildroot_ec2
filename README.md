@@ -16,6 +16,9 @@ volume, mounted under my home directory.
 
 I used a 1GB gp2 volume for the target system, mounted under `/dev/sdf`.
 
+This was a preliminary step in getting the
+[Nerves embedded Elixir system running on EC2](https://github.com/cogini/nerves_system_ec2).
+
 ## Install build deps
 
 ```shell
